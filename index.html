@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Luna - Simulador de Módulo</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.css" />
+<style>
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
+.container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background: whitesmoke; //springgreen;
+  justify-content: center;
+  align-items: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2 class="ui icon header">
+     <i class="huge power icon"></i>
+      <div class="content">
+        Simulador
+      </div>
+  </h2>
+</div>
+
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+
+<script>
+function startSimulation(broker, port, module) {
+
+const BROKER_URL = broker;
+const BROKER_PORT = port;
+const MODULE_IDENTIFIER = module;
+
+// Create a client instance
+let client = new Paho.MQTT.Client(BROKER_URL, Number(BROKER_PORT), "module_simulator_"+Number(new Date()));
+
+// set callback handlers
+client.onConnectionLost = onConnectionLost;
+client.onMessageArrived = onMessageArrived;
+
+// connect the client
+client.connect({useSSL: true, onSuccess:onConnect});
+
+
+// called when the client connects
+function onConnect() {
+  // Once a connection has been made, make a subscription and send a message.
+  console.log("onConnect");
+  client.subscribe('m/' + MODULE_IDENTIFIER + '/+');
+  client.subscribe('m/' + MODULE_IDENTIFIER + '/1/1');
+}
+
+// called when the client loses its connection
+function onConnectionLost(responseObject) {
+setTimeout(function(){
+client.connect({useSSL: true, onSuccess:onConnect});
+}, 5000);
+}
+
+// called when a message arrives
+function onMessageArrived(message) {
+console.log(message);
+	let topic = message.destinationName.split('/');
+  let payload = Number(message.payloadString);
+  if (topic.length === 3) {
+    if (topic[2] == '101' && payload == 1) {
+			notify(true);
+    } else if (topic[2] == '102' && payload == 1) {
+    	notify(false);
+    }
+  } else if (topic.length === 4) {
+  	changeUI(payload == 1);
+  }
+}
+
+function notify(status) {
+	message = new Paho.MQTT.Message(status ? '1' : '0');
+  message.destinationName = 'm/' + MODULE_IDENTIFIER + '/1/1';
+  message.retained = true;
+  client.send(message);
+}
+
+function changeUI(status) {
+	let background = status ? 'springgreen' : 'whitesmoke';
+  $('.container').css('background', background);
+}
+
+}
+</script>
+</body>
+
+</html>
