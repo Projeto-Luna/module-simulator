@@ -38,7 +38,7 @@ body {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
 <script>
-function startSimulation(broker, port, module) {
+function startSimulation(broker, port, module, ssl) {
 
 const BROKER_URL = broker;
 const BROKER_PORT = port;
@@ -52,7 +52,7 @@ client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = onMessageArrived;
 
 // connect the client
-client.connect({useSSL: true, onSuccess:onConnect});
+client.connect({useSSL: ssl || false, onSuccess:onConnect});
 
 
 // called when the client connects
