@@ -84,7 +84,7 @@
       const MODULE_IDENTIFIER = module;
 
       // Create a client instance
-      let client = new Paho.MQTT.Client(BROKER_URL, Number(BROKER_PORT), "module_simulator_" + Number(new Date()));
+      let client = new Paho.MQTT.Client(BROKER_URL, Number(BROKER_PORT), "module-simulator-" + MODULE_IDENTIFIER);
       let willMessage = new Paho.MQTT.Message('0');
       willMessage.destinationName = 'm/' + MODULE_IDENTIFIER;
       willMessage.retained = true;
