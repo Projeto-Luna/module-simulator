@@ -85,6 +85,9 @@
 
       // Create a client instance
       let client = new Paho.MQTT.Client(BROKER_URL, Number(BROKER_PORT), "module_simulator_" + Number(new Date()));
+      let willMessage = new Paho.MQTT.Message('0');
+      willMessage.destinationName = 'm/' + MODULE_IDENTIFIER;
+      willMessage.retained = true;
 
       // set callback handlers
       client.onConnectionLost = onConnectionLost;
@@ -93,7 +96,8 @@
       // connect the client
       client.connect({
         useSSL: ssl || false,
-        onSuccess: onConnect
+        onSuccess: onConnect,
+        willMessage: willMessage
       });
 
 
@@ -101,6 +105,10 @@
       function onConnect() {
         // Once a connection has been made, make a subscription and send a message.
         console.log("onConnect");
+        let message = new Paho.MQTT.Message('1');
+        message.destinationName = 'm/' + MODULE_IDENTIFIER;
+        message.retained = true;
+        client.send(message);
         client.subscribe('m/' + MODULE_IDENTIFIER + '/+');
         client.subscribe('m/' + MODULE_IDENTIFIER + '/1/1');
       }
